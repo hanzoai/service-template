@@ -1,0 +1,36 @@
+# Cloud Build config for hanzoai/template.
+#
+# Two parallel native-arch builds → manifest. No QEMU. No GitHub runners.
+# Pushes to ghcr.io/hanzoai/template — Hanzo images stay on GHCR.
+steps:
+  - name: gcr.io/cloud-builders/docker
+    id: build-amd64
+    args:
+      - buildx
+      - build
+      - --platform=linux/amd64
+      - --tag=ghcr.io/hanzoai/template:${SHORT_SHA}-amd64
+      - --push
+      - .
+  - name: gcr.io/cloud-builders/docker
+    id: build-arm64
+    args:
+      - buildx
+      - build
+      - --platform=linux/arm64
+      - --tag=ghcr.io/hanzoai/template:${SHORT_SHA}-arm64
+      - --push
+      - .
+  - name: gcr.io/cloud-builders/docker
+    id: manifest
+    waitFor: [build-amd64, build-arm64]
+    args:
+      - buildx
+      - imagetools
+      - create
+      - --tag=ghcr.io/hanzoai/template:${SHORT_SHA}
+      - ghcr.io/hanzoai/template:${SHORT_SHA}-amd64
+      - ghcr.io/hanzoai/template:${SHORT_SHA}-arm64
+options:
+  machineType: E2_HIGHCPU_8
+  logging: CLOUD_LOGGING_ONLY
