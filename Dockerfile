@@ -2,7 +2,7 @@
 # runners build native amd64 and arm64 in parallel; QEMU is banned.
 #
 # Image: ghcr.io/hanzoai/template:<tag>
-FROM golang:1.26.1-alpine AS build
+FROM golang:1.26.5-alpine AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
